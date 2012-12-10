@@ -10,4 +10,3 @@ x = new Scheduler([
         delay: 1000
     }
 ]);
-x.run();

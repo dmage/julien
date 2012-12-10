@@ -1,6 +1,8 @@
 exports = module.exports = function Scheduler(tasks) {
     this._queue = [];
     this._tasks = tasks;
+
+    this.run();
 }
 
 exports.prototype.run = function run() {
