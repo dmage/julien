@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-var Scheduler = require('./scheduler');
+var Scheduler = require('./scheduler'),
+    Sender = require('./sender');
 
 var net = require('./modules/net');
 
+var sender = new Sender();
 x = new Scheduler([
     {
         run: function(cb) {
@@ -10,4 +12,6 @@ x = new Scheduler([
         },
         delay: 1000
     }
-]);
+], function(result) {
+    sender.dispatch(result);
+});

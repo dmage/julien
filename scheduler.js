@@ -1,6 +1,7 @@
-exports = module.exports = function Scheduler(tasks) {
+exports = module.exports = function Scheduler(tasks, resultHandler) {
     this._queue = [];
     this._tasks = tasks;
+    this.resultHandler = resultHandler;
 
     this.run();
 }
@@ -15,12 +16,13 @@ exports.prototype.busyWaitDelay = 1000;
 exports.prototype.firstRunDelay = 100;
 
 exports.prototype.dispatch = function dispatch(task, callback) {
-    var _queue = this._queue;
+    var _this = this,
+        _queue = this._queue;
 
     task.run(function(result) {
-        console.log(result);
+        _this.resultHandler(result);
 
-        var now = new Date();
+        var now = +new Date();
         task._runAt += task.delay;
         if (task._runAt < now) {
             console.log('task too slow', task);
