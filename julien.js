@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var Scheduler = require('./scheduler');
 
-var net = require('./modules/net');
+var net = require('./modules/net-bsd');
 
 x = new Scheduler([
     {
