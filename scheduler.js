@@ -1,84 +1,97 @@
-exports = module.exports = function Scheduler(tasks, resultHandler) {
+Scheduler = module.exports = function Scheduler(tasks) {
     this._queue = [];
-    this._tasks = tasks;
-    this.resultHandler = resultHandler;
-
-    this.run();
+    this._activeTasks = 0;
+    this._lastWasAt = 0;
+    this._nextAt = 0;
+    this._timer = null;
 }
 
-exports.prototype.run = function run() {
-    this.firstRun();
-    this.processQueue();
-}
+Scheduler.prototype.throttle = 100;
+Scheduler.prototype.concurrentLimit = Number.POSITIVE_INFINITY;
 
-exports.prototype.busyWaitDelay = 1000;
-
-exports.prototype.firstRunDelay = 100;
-
-exports.prototype.dispatch = function dispatch(task, callback) {
+Scheduler.prototype.addTask = function addTask(f, runAt) {
     var _this = this,
-        _queue = this._queue;
+        _queue = _this._queue,
+        task = {
+            f: f,
+            runAt: runAt || 0,
+        };
 
-    task.run(function(result) {
-        _this.resultHandler(result);
-
-        var now = +new Date();
-        task._runAt += task.delay;
-        if (task._runAt < now) {
-            console.log('task too slow', task);
-
-            var n = Math.floor((now - task._runAt)/task.delay);
-            task._runAt += (n + 1)*task.delay;
+    for (var i = _queue.length - 1; i >= -1; --i) {
+        if (i == -1 || task.runAt >= _queue[i].runAt) {
+            _queue.splice(i + 1, 0, task);
+            break;
         }
-
-        for (var i = _queue.length - 1; i >= -1; --i) {
-            if (i == -1 || task._runAt >= _queue[i]._runAt) {
-                _queue.splice(i + 1, 0, task);
-                break;
-            }
-        }
-
-        if (callback) {
-            callback();
-        }
-    });
+    }
+    _this._setupTimer();
 }
 
-exports.prototype.firstRun = function firstRun() {
+Scheduler.prototype._processQueue = function _processQueue() {
     var _this = this,
-        _tasks = _this._tasks,
-        firstRunDelay = _this.firstRunDelay;
+        _queue = _this._queue,
+        now = +new Date();
 
-    if (_tasks.length == 0) {
+    if (_queue.length > 0) {
+        if (_queue[0].runAt <= now) {
+            var task = _queue.shift();
+            _this._dispatch(task);
+        }
+    }
+
+    if (_queue.length > 0) {
+        _this._setupTimer();
+    }
+}
+
+Scheduler.prototype._setupTimer = function _setupTimer() {
+    var _this = this,
+        _queue = _this._queue,
+        now = +new Date(),
+        delay;
+
+    if (_this._queue.length === 0) {
+        console.log('no more tasks');
         return;
     }
 
-    var task = _tasks.shift();
-    task._runAt = +new Date();
-    this.dispatch(task, function() {
-        setTimeout(function() {
-            _this.firstRun();
-        }, firstRunDelay);
-    });
+    if (_this._activeTasks >= _this.concurrentLimit) {
+        console.log('too many tasks');
+        return;
+    }
+
+    var nextAt = Math.max(_this._lastWasAt + _this.throttle, _queue[0].runAt);
+    delay = nextAt - now;
+    if (delay < 0) {
+        delay = 0;
+    }
+    if (delay !== delay) {
+        throw new Error("invalid delay for setTimeout: " + delay);
+    }
+
+    nextAt = now + delay;
+    if (_this._timer === null || _this._nextAt > nextAt) {
+        clearTimeout(_this._timer);
+
+        _this._nextAt = nextAt;
+        console.log('new timer', delay);
+        _this._timer = setTimeout(function() {
+            _this._lastWasAt = +new Date();
+            _this._timer = null;
+
+            _this._processQueue();
+        }, delay);
+    } else {
+        console.log('keep old timer');
+    }
 }
 
-exports.prototype.processQueue = function processQueue() {
+Scheduler.prototype._dispatch = function _dispatch(task) {
     var _this = this,
-        _queue = _this._queue;
+        _queue = this._queue;
 
-    var now = +new Date();
-    if (_queue.length > 0 && _queue[0]._runAt < now) {
-        var task = _queue.shift();
-        _this.dispatch(task);
-    }
-
-    var delay = _this.busyWaitDelay;
-    if (_queue.length > 0) {
-        delay = _queue[0]._runAt - now;
-    }
-
-    console.log('delay');
-    setTimeout(function() {
-        _this.processQueue();
-    }, delay);
+    _this._activeTasks += 1;
+    task.f(function() {
+        _this._activeTasks -= 1;
+        _this._setupTimer();
+    }, task);
 }

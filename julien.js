@@ -20,15 +20,21 @@ sender._do_send = function _do_send(queue) {
     });
 }
 
-x = new Scheduler([
-    {
-        run: function(cb) {
-            console.log('run');
-            new net().run(cb);
-        },
-        delay: 5000
-    }
-], function(result) {
-    console.log('dispatch');
-    sender.dispatch(result);
-});
+var initTasks = new Scheduler();
+initTasks.throttle = 100;
+initTasks.concurrentLimit = 1;
+
+var periodicTasks = new Scheduler();
+periodicTasks.throttle = 0;
+periodicTasks.concurrentLimit = 10;
+
+var netTask = function(cb, task) {
+    var now = + new Date();
+    new net().run(function(netResult) {
+        sender.dispatch(netResult);
+        periodicTasks.addTask(netTask, (task.runAt || now) + 1000);
+        cb();
+    });
+}
+
+initTasks.addTask(netTask);
