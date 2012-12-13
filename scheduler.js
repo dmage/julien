@@ -77,6 +77,7 @@ exports.prototype.processQueue = function processQueue() {
         delay = _queue[0]._runAt - now;
     }
 
+    console.log('delay');
     setTimeout(function() {
         _this.processQueue();
     }, delay);

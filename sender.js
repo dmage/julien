@@ -21,12 +21,14 @@ Sender.prototype.dispatch = function dispatch(values) {
         if (_this._sendAt === null) {
             delay = _this._delay;
         } else {
-            delay = _this.sendAt - +new Date();
+            delay = _this._sendAt - +new Date();
         }
 
         if (delay <= 0) {
+            console.log('Sender: run');
             _this._send();
         } else {
+            console.log('Sender: create timer', delay);
             _this._sendTimer = setTimeout(function() {
                 _this._send();
             }, delay);
@@ -43,6 +45,7 @@ Sender.prototype._send = function _send() {
         _this._do_send(_q);
 
         _this._sendAt = +new Date() + _this._delay;
+        console.log('Sender: create timer');
         _this._sendTimer = setTimeout(function() {
             _this._send();
         }, _this._delay);

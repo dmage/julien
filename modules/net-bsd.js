@@ -5,7 +5,7 @@ net = module.exports = function net() {
 
 net.prototype.run = function run(cb) {
     var now = new Date();
-    var result = [];
+    var ifaces = {};
     var firstLine = true;
     execute('netstat', ['-n', '-i', '-b'])
         .eachLine(function(line) {
@@ -24,11 +24,18 @@ net.prototype.run = function run(cb) {
                 }
                 firstLine = false;
             } else {
-                result.push({ name: 'net.' + name + '.rx', timestamp: now, value: rx });
-                result.push({ name: 'net.' + name + '.tx', timestamp: now, value: tx });
+                ifaces[name] = { rx: rx, tx: tx };
             }
         })
         .exit(function(code) {
+            var result = [];
+            for (iface in ifaces) {
+                var name = iface,
+                    rx = ifaces[name].rx,
+                    tx = ifaces[name].tx;
+                result.push({ name: 'net.' + name + '.rx', timestamp: now, value: rx });
+                result.push({ name: 'net.' + name + '.tx', timestamp: now, value: tx });
+            }
             cb(result);
         });
 }
