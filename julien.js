@@ -20,6 +20,10 @@ sender._do_send = function _do_send(queue) {
     });
 }
 
+var config = [
+    { check: new net(), delay: 5000 }
+];
+
 var initTasks = new Scheduler();
 initTasks.throttle = 100;
 initTasks.concurrentLimit = 1;
@@ -28,13 +32,22 @@ var periodicTasks = new Scheduler();
 periodicTasks.throttle = 0;
 periodicTasks.concurrentLimit = 10;
 
-var netTask = function(cb, task) {
-    var now = + new Date();
-    new net().run(function(netResult) {
-        sender.dispatch(netResult);
-        periodicTasks.addTask(netTask, (task.runAt || now) + 1000);
-        cb();
-    });
-}
+config.forEach(function(cfg) {
+    var periodic = function(cb, task) {
+        cfg.check.run(function(result) {
+            sender.dispatch(result);
+            periodicTasks.addTask(periodic, task.runAt + cfg.delay);
+            cb();
+        });
+    };
 
-initTasks.addTask(netTask);
+    var init = function(cb) {
+        cfg.check.run(function(result) {
+            sender.dispatch(result);
+            periodicTasks.addTask(periodic, +new Date() + cfg.delay);
+            cb();
+        });
+    };
+
+    initTasks.addTask(init);
+});
