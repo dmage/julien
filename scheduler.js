@@ -6,7 +6,7 @@ Scheduler = module.exports = function Scheduler(tasks) {
     this._timer = null;
 }
 
-Scheduler.prototype.throttle = 100;
+Scheduler.prototype.throttle = 0;
 Scheduler.prototype.concurrentLimit = Number.POSITIVE_INFINITY;
 
 Scheduler.prototype.addTask = function addTask(f, runAt) {
@@ -32,10 +32,15 @@ Scheduler.prototype._processQueue = function _processQueue() {
         now = +new Date();
 
     if (_queue.length > 0) {
-        if (_queue[0].runAt <= now) {
+        if (_queue[0].runAt <= now + 1) { // + 1 because setTimeout may fire a bit early
+            console.log(+new Date(), this.toString(), 'dispatching task', {lag: now - _queue[0].runAt});
             var task = _queue.shift();
             _this._dispatch(task);
+        } else {
+            console.log(+new Date(), this.toString(), 'head task not ready');
         }
+    } else {
+        console.log(+new Date(), this.toString(), 'empty queue');
     }
 
     if (_queue.length > 0) {
@@ -50,12 +55,12 @@ Scheduler.prototype._setupTimer = function _setupTimer() {
         delay;
 
     if (_this._queue.length === 0) {
-        console.log('no more tasks');
+        console.log(+new Date(), this.toString(), 'no more tasks');
         return;
     }
 
     if (_this._activeTasks >= _this.concurrentLimit) {
-        console.log('too many tasks');
+        console.log(+new Date(), this.toString(), 'too many tasks');
         return;
     }
 
@@ -73,7 +78,7 @@ Scheduler.prototype._setupTimer = function _setupTimer() {
         clearTimeout(_this._timer);
 
         _this._nextAt = nextAt;
-        console.log('new timer', delay);
+        console.log(+new Date(), this.toString(), 'new timer', delay, {nextAt: nextAt});
         _this._timer = setTimeout(function() {
             _this._lastWasAt = +new Date();
             _this._timer = null;
@@ -81,7 +86,7 @@ Scheduler.prototype._setupTimer = function _setupTimer() {
             _this._processQueue();
         }, delay);
     } else {
-        console.log('keep old timer');
+        console.log(+new Date(), this.toString(), 'keep old timer');
     }
 }
 

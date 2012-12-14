@@ -7,7 +7,8 @@ var http = require('http');
 
 var sender = new Sender();
 sender._do_send = function _do_send(queue) {
-    console.log(+new Date(), queue);
+    //console.log(+new Date(), queue);
+    console.log(+new Date(), "_do_send queue length: " + queue.length);
     queue.forEach(function(data) {
         var path = '/api/write?object=dmage-host&signal=' + data.name + '&value=' + data.value;
         http.get({
@@ -27,10 +28,12 @@ var config = [
 var initTasks = new Scheduler();
 initTasks.throttle = 100;
 initTasks.concurrentLimit = 1;
+initTasks.toString = function() { return "[initTasks]"; };
 
 var periodicTasks = new Scheduler();
 periodicTasks.throttle = 0;
 periodicTasks.concurrentLimit = 10;
+periodicTasks.toString = function() { return "[periodicTasks]"; };
 
 config.forEach(function(cfg) {
     var periodic = function(cb, task) {

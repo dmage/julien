@@ -1,38 +1,27 @@
+var Scheduler = require('./scheduler');
+
 Sender = module.exports = function Sender(config) {
     config = config || {};
 
     this._sendQueue = [];
-
-    this._sendTimer = null;
-    this._sendAt = null;
-
-    this._delay = config.delay || 1000;
+    this._scheduler = new Scheduler();
+    this._scheduler.throttle = config.delay || 1000;
+    this._scheduler.toString = function() { return "[Sender._scheduler]"; };
 }
 
 Sender.prototype.dispatch = function dispatch(values) {
     var _this = this,
+        _scheduler = _this._scheduler,
         _sendQueue = _this._sendQueue,
-        args = [_sendQueue.length, 0].concat(values),
-        delay;
+        args = [_sendQueue.length, 0].concat(values);
 
     Array.prototype.splice.apply(_sendQueue, args);
 
-    if (_this._sendTimer === null) {
-        if (_this._sendAt === null) {
-            delay = _this._delay;
-        } else {
-            delay = _this._sendAt - +new Date();
-        }
-
-        if (delay <= 0) {
-            console.log('Sender: run');
+    if (_scheduler._timer === null) {
+        _scheduler._lastWasAt = _scheduler._lastWasAt || +new Date();
+        _scheduler.addTask(function() {
             _this._send();
-        } else {
-            console.log('Sender: create timer', delay);
-            _this._sendTimer = setTimeout(function() {
-                _this._send();
-            }, delay);
-        }
+        });
     }
 }
 
@@ -43,14 +32,6 @@ Sender.prototype._send = function _send() {
     if (_q.length > 0) {
         _this._sendQueue = [];
         _this._do_send(_q);
-
-        _this._sendAt = +new Date() + _this._delay;
-        console.log('Sender: create timer');
-        _this._sendTimer = setTimeout(function() {
-            _this._send();
-        }, _this._delay);
-    } else {
-        _this._sendTimer = null;
     }
 }
 
