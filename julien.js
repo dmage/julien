@@ -3,6 +3,7 @@ var Scheduler = require('./scheduler'),
     Sender = require('./sender');
 
 var net = require('./modules/net');
+var sensors = require('./modules/sensors');
 var http = require('http');
 
 var sender = new Sender();
@@ -22,7 +23,8 @@ sender._do_send = function _do_send(queue) {
 }
 
 var config = [
-    { check: new net(), delay: 5000 }
+    { check: new net(), delay: 5000 },
+    { check: new sensors(), delay: 1000 }
 ];
 
 var initTasks = new Scheduler();
