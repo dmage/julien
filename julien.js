@@ -2,16 +2,20 @@
 var Scheduler = require('./scheduler'),
     Sender = require('./sender');
 
-var net = require('./modules/net');
-var sensors = require('./modules/sensors');
-var http = require('http');
+var net = require('./modules/net'),
+    sensors = require('./modules/sensors');
+var http = require('http'),
+    os = require('os');
 
 var sender = new Sender();
 sender._do_send = function _do_send(queue) {
+    var self_host_name = os.hostname();
+
     //console.log(+new Date(), queue);
     console.log(+new Date(), "_do_send queue length: " + queue.length);
     queue.forEach(function(data) {
-        var path = '/api/write?object=dmage-host&signal=' + data.name + '&value=' + data.value;
+        data.object = data.object || self_host_name;
+        var path = '/api/write?object=' + data.object + '&signal=' + data.name + '&value=' + data.value;
         http.get({
             hostname: 'dmage.ru',
             port: 3000,
