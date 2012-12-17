@@ -28,7 +28,7 @@ sender._do_send = function _do_send(queue) {
 
 var config = [
     { check: new net(), delay: 5000 },
-    { check: new sensors(), delay: 1000 }
+    { check: new sensors(), delay: 5000 }
 ];
 
 var initTasks = new Scheduler();

@@ -8,9 +8,28 @@ sensors.prototype.run = function run(cb) {
     var result = [];
     execute('sensors', [])
         .eachLine(function(line) {
-            var match = line.match(/^Core([0-9]+) Temp: +\+([0-9.]+) C/);
+            var match = line.match(/^([A-Za-z0-9. _+-]+): +\+?([0-9.]+) C/);
             if (match) {
-                result.push({ name: 'cpu.' + match[1] + '.temp', timestamp: now, value: match[2] });
+                var name = match[1],
+                    value = match[2];
+                name = name.replace(/ /g, '_');
+                result.push({ name: 'sensors.temperature.' + name, timestamp: now, value: value });
+            }
+
+            var match = line.match(/^([A-Za-z0-9. _+-]+): +\+?([0-9.]+) V/);
+            if (match) {
+                var name = match[1],
+                    value = match[2];
+                name = name.replace(/ /g, '_');
+                result.push({ name: 'sensors.voltage.' + name, timestamp: now, value: value });
+            }
+
+            var match = line.match(/^([A-Za-z0-9. _+-]+): +([0-9.]+) RPM/);
+            if (match) {
+                var name = match[1],
+                    value = match[2];
+                name = name.replace(/ /g, '_');
+                result.push({ name: 'sensors.rpm.' + name, timestamp: now, value: value });
             }
         })
         .exit(function(code) {
