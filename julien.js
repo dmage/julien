@@ -3,7 +3,12 @@ var Scheduler = require('./scheduler'),
     Sender = require('./sender');
 
 var net = require('./modules/net'),
-    sensors = require('./modules/sensors');
+    sensors = require('./modules/sensors'),
+    ping = require('./modules/ping'),
+    delta = require('./modules/delta'),
+    landTo = require('./modules/land-to'),
+    ifUpdated = require('./modules/if-updated'),
+    cpu = require('./modules/cpu');
 var http = require('http'),
     os = require('os');
 
@@ -15,13 +20,18 @@ sender._do_send = function _do_send(queue) {
     console.log(+new Date(), "_do_send queue length: " + queue.length);
     queue.forEach(function(data) {
         data.object = data.object || self_host_name;
-        var path = '/api/write?object=' + data.object + '&signal=' + data.name + '&value=' + data.value;
+        var path = '/api/write?object=' + encodeURIComponent(data.object) +
+            '&signal=' + encodeURIComponent(data.name) +
+            '&timestamp=' + encodeURIComponent(data.timestamp/1000) +
+            '&value=' + encodeURIComponent(data.value);
         http.get({
             hostname: 'dmage.ru',
             port: 3000,
             path: path,
             method: 'GET'
         }, function() {
+        }).on('error', function(e) {
+            console.log(e, 'while sending', data);
         });
     });
 }
