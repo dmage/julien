@@ -1,4 +1,4 @@
-delta = module.exports = function delta(check) {
+delta = module.exports = function delta(opts, check) {
     this.check = check;
     this.prev = {};
 }

@@ -9,7 +9,10 @@ landTo.prototype.run = function run(cb) {
         var filtered = [];
         for (var i = 0; i < result.length; ++i) {
             var c = result[i];
-            filtered.push({ name: prefix + c.name, timestamp: c.timestamp, value: c.value });
+        var name = c.name;
+        if (prefix && name) { name = prefix + '.' + name; }
+        else if (prefix) { name = prefix; }
+            filtered.push({ name: name, timestamp: c.timestamp, value: c.value });
         }
         cb(filtered);
     });

@@ -19,10 +19,10 @@ net.prototype.run = function run(cb) {
             } else if (line.match(/^ *$/)) {
                 if (iface) {
                     if (typeof iface.rx !== 'undefined') {
-                        result.push({ name: 'net.' + iface.name + '.rx', timestamp: now, value: iface.rx });
+                        result.push({ name: iface.name + '.rx', timestamp: now, value: iface.rx });
                     }
                     if (typeof iface.tx !== 'undefined') {
-                        result.push({ name: 'net.' + iface.name + '.tx', timestamp: now, value: iface.tx });
+                        result.push({ name: iface.name + '.tx', timestamp: now, value: iface.tx });
                     }
                     iface = null;
                 }
@@ -41,10 +41,10 @@ net.prototype.run = function run(cb) {
         .exit(function(code) {
             if (iface) {
                 if (typeof iface.rx !== 'undefined') {
-                    result.push({ name: 'net.' + iface.name + '.rx', timestamp: now, value: iface.rx });
+                    result.push({ name: iface.name + '.rx', timestamp: now, value: iface.rx });
                 }
                 if (typeof iface.tx !== 'undefined') {
-                    result.push({ name: 'net.' + iface.name + '.tx', timestamp: now, value: iface.tx });
+                    result.push({ name: iface.name + '.tx', timestamp: now, value: iface.tx });
                 }
             }
             cb(result);

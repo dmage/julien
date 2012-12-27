@@ -10,7 +10,7 @@ cpu.prototype.run = function run(cb) {
     var cpusInfo = os.cpus();
     for (var i = 0; i < cpusInfo.length; ++i) {
         for (var m in cpusInfo[i].times) {
-            result.push({ name: 'cpu.' + i + '.' + m, timestamp: now, value: cpusInfo[i].times[m] });
+            result.push({ name: i + '.' + m, timestamp: now, value: cpusInfo[i].times[m] });
         }
     }
     cb(result);

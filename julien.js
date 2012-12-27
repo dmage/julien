@@ -2,13 +2,7 @@
 var Scheduler = require('./scheduler'),
     Sender = require('./sender');
 
-var net = require('./modules/net'),
-    sensors = require('./modules/sensors'),
-    ping = require('./modules/ping'),
-    delta = require('./modules/delta'),
-    landTo = require('./modules/land-to'),
-    ifUpdated = require('./modules/if-updated'),
-    cpu = require('./modules/cpu');
+var landTo = require('./modules/land-to');
 var http = require('http'),
     os = require('os');
 
@@ -36,10 +30,22 @@ sender._do_send = function _do_send(queue) {
     });
 }
 
-var config = [
-    { check: new net(), delay: 5000 },
-    { check: new sensors(), delay: 5000 }
-];
+var remoteConfig = require('./config');
+var config = [];
+for (var i = 0; i < remoteConfig.length; ++i) {
+    var r = remoteConfig[i];
+    var c = {
+        delay: r.delay || die(),
+    };
+    var check = undefined;
+    for (var j = 0; j < r.pipeline.length; ++j) {
+        var module = require('./modules/' + r.pipeline[j].module);
+        check = new module(r.pipeline[j], check);
+    }
+    check = new landTo({ prefix: r.landTo }, check);
+    c.check = check;
+    config.push(c);
+}
 
 var initTasks = new Scheduler();
 initTasks.throttle = 100;

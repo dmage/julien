@@ -13,7 +13,7 @@ sensors.prototype.run = function run(cb) {
                 var name = match[1],
                     value = match[2];
                 name = name.replace(/ /g, '_');
-                result.push({ name: 'sensors.temperature.' + name, timestamp: now, value: value });
+                result.push({ name: 'temperature.' + name, timestamp: now, value: value });
             }
 
             var match = line.match(/^([A-Za-z0-9. _+-]+): +\+?([0-9.]+) V/);
@@ -21,7 +21,7 @@ sensors.prototype.run = function run(cb) {
                 var name = match[1],
                     value = match[2];
                 name = name.replace(/ /g, '_');
-                result.push({ name: 'sensors.voltage.' + name, timestamp: now, value: value });
+                result.push({ name: 'voltage.' + name, timestamp: now, value: value });
             }
 
             var match = line.match(/^([A-Za-z0-9. _+-]+): +([0-9.]+) RPM/);
@@ -29,7 +29,7 @@ sensors.prototype.run = function run(cb) {
                 var name = match[1],
                     value = match[2];
                 name = name.replace(/ /g, '_');
-                result.push({ name: 'sensors.rpm.' + name, timestamp: now, value: value });
+                result.push({ name: 'rpm.' + name, timestamp: now, value: value });
             }
         })
         .exit(function(code) {

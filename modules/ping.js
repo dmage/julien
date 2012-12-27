@@ -1,7 +1,7 @@
 var execute = require('./../utils').execute;
 
-ping = module.exports = function ping(hostname) {
-    this.hostname = hostname;
+ping = module.exports = function ping(opts) {
+    this.hostname = opts.hostname;
 }
 
 ping.prototype.run = function run(cb) {
@@ -12,7 +12,7 @@ ping.prototype.run = function run(cb) {
         .eachLine(function(line) {
             var match = line.match(/time=([0-9.]+)/);
             if (match) {
-                result.push({ name: 'ping.' + hostname + '.time', timestamp: now, value: match[1] });
+                result.push({ name: 'time', timestamp: now, value: match[1] });
             }
         })
         .exit(function(code) {

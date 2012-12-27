@@ -33,8 +33,8 @@ net.prototype.run = function run(cb) {
                 var name = iface,
                     rx = ifaces[name].rx,
                     tx = ifaces[name].tx;
-                result.push({ name: 'net.' + name + '.rx', timestamp: now, value: rx });
-                result.push({ name: 'net.' + name + '.tx', timestamp: now, value: tx });
+                result.push({ name: name + '.rx', timestamp: now, value: rx });
+                result.push({ name: name + '.tx', timestamp: now, value: tx });
             }
             cb(result);
         });

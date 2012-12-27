@@ -1,4 +1,4 @@
-ifUpdated = module.exports = function ifUpdated(check) {
+ifUpdated = module.exports = function ifUpdated(opts, check) {
     this.check = check;
     this.prev = {};
 }
